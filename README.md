@@ -16,7 +16,7 @@ npm install
 ```
 Esta aplicação possui dependências Bower, caso não possua o mesmo instale-o execute em seu terminal o comando:
 ```
-npm instal -g bower
+npm install -g bower
 ```
 E em seguida o comando:
 ```
