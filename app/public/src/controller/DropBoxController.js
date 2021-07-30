@@ -12,6 +12,10 @@ class DropBoxController{
         this.timeFileEl = this.snackModalEl.querySelector('.timeleft');
         this.listFilesEl = document.querySelector('#list-of-files-and-directories');
 
+        this.btnNewFolder = document.querySelector('#btn-new-folder');
+        this.btnRename = document.querySelector('#btn-rename');
+        this.btnDelete = document.querySelector('#btn-delete');
+
         this.connectFirebase();
         this.initEvents();
         this.readFiles()
@@ -35,11 +39,86 @@ class DropBoxController{
           firebase.analytics();
     }
 
+    getSelection(){
+        return this.listFilesEl.querySelectorAll('.selected');
+    }
+
+    removeTask(){
+
+        let promises = [];
+
+        this.getSelection().forEach(li=>{
+
+            let file = JSON.parse(li.dataset.file);
+            let key = li.dataset.key;
+            let formData = new FormData();
+
+            formData.append('path', file.path); 
+            formData.append('key', key);
+
+            promises.push(this.ajax('/file', 'DELETE', formData));
+
+        });
+
+        return Promise.all(promises);
+
+    }
+
     initEvents(){
+
+        this.btnDelete.addEventListener('click', e=>{
+
+            this.removeTask().then(responses => {
+
+                responses.forEach(response =>{
+
+                    if(response.fields.key){
+                        this.getFireBaseRef().child(response.fields.key).remove();
+                    }
+                      
+                });
+
+            }).catch(err=>{
+
+                console.error(err);
+
+            });
+
+        });
+
+
+        this.btnRename.addEventListener('click', e=>{
+
+            let li = this.getSelection()[0];
+            let file = JSON.parse(li.dataset.file);
+
+            let name = prompt("Renomear o arquivo:", file.name);
+
+            if (name) {
+
+                file.name = name;
+                this.getFireBaseRef().child(li.dataset.key).set(file);
+            }
+        });
 
         this.listFilesEl.addEventListener('selectionchange', e=>{
 
-            console.log('selectionchange');
+            switch (this.getSelection().length) {
+                case 0:
+                    this.btnDelete.style.display = 'none';
+                    this.btnRename.style.display = 'none';
+                    break;
+
+                case 1:
+                    this.btnDelete.style.display = 'block';
+                    this.btnRename.style.display = 'block';
+                    break;
+            
+                default:
+                    this.btnDelete.style.display = 'block';
+                    this.btnRename.style.display = 'none';
+                    break;
+            }
 
         });
 
@@ -92,51 +171,86 @@ class DropBoxController{
         this.snackModalEl.style.display = (show) ? 'block' : 'none';
     }
 
+    ajax(url, method = 'GET', formData = new FormData(), onprogress = function(){}, onloadstart = function(){}){
+
+        return new Promise((resolve, reject) => {
+
+            let ajax = new XMLHttpRequest();
+
+            ajax.open(method, url);
+
+            ajax.onload = event => {
+                
+                try {
+                    resolve(JSON.parse(ajax.responseText));
+                } catch (e) {
+                    
+                    reject(e);
+
+                }
+
+            };
+
+            ajax.onerror = event => {
+                
+                reject(event);
+
+            };
+
+            ajax.upload.onprogress = onprogress;
+
+            onloadstart();
+            
+            ajax.send(formData);
+
+        });
+
+    }
 
     uploadTask(files){
 
-        let promieses = [];
+        let promises = [];
 
-        [...files].forEach(file =>{
+        [...files].forEach(file => {
+            
+            promises.push(new Promise((resolve, reject) => {
 
-            promieses.push(new Promise((resolve, reject) => {
+                let fileRef = firebase.storage().ref(this.currentFolder.join('/')).child(file.name);
 
-                let ajax = new XMLHttpRequest();
-                ajax.open('POST', '/upload');
-                ajax.onload = event => {
+                let task = fileRef.put(file);
 
-                    try {
-                        resolve(JSON.parse(ajax.responseText));
-                    } catch (e) {
-                        reject(e);
-                    }
+                task.on('state_changed', snapshot => {
 
-                };
+                    this.uploadProgress({
+                        loaded: snapshot.bytesTransferred,
+                        total: snapshot.totalBytes
+                    }, file);
 
-                ajax.onerror = event =>{
+                }, error => {
 
-                    reject(event);
+                    console.error(error);
+                    reject(error);
 
-                };
+                }, () => {
 
-                ajax.upload.onprogress = event => {
+                    fileRef.getMetadata().then(metadata => {
 
-                    this.uploadProgress(event, file);
-                    //console.log(event);
+                        resolve(metadata);
 
-                };
+                    }).catch(err => {
 
-                let formData = new FormData();
-                formData.append('input-file', file);
+                        reject(err);
 
-                this.startUploadTime = Date.now();
-                ajax.send(formData);
+                    });
+
+                });
+
             }));
 
         });
 
-        //all recebe uma coleção de promessas
-        return Promise.all(promieses);
+        return Promise.all(promises);
+
     }
 
     uploadProgress(event, file){
@@ -347,7 +461,10 @@ class DropBoxController{
 
     getFileView(file, key){
         let li = document.createElement('li');
+
         li.dataset.key = key;
+        li.dataset.file = JSON.stringify(file);
+
         li.innerHTML = `
             ${this.getFileIconView(file)}
             <div class="name text-center">${file.name}</div>
@@ -379,7 +496,6 @@ class DropBoxController{
 
         li.addEventListener('click', e =>{
 
-            this.listFilesEl.dispatchEvent(this.onselectionchange);
             if(e.shiftKey){
 
                 let firstLi = this.listFilesEl.querySelector('.selected'); 
@@ -405,6 +521,7 @@ class DropBoxController{
 
                     });
 
+                    this.listFilesEl.dispatchEvent(this.onselectionchange);
                     return true;
                     
                 }
@@ -419,6 +536,7 @@ class DropBoxController{
             } 
 
             li.classList.toggle('selected');
+            this.listFilesEl.dispatchEvent(this.onselectionchange);
 
         });
         
