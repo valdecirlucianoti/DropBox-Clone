@@ -2,6 +2,8 @@ class DropBoxController{
 
     constructor(){
 
+        this.onselectionchange = new Event('selectionchange');
+
         this.snackModalEl = document.querySelector('#react-snackbar-root');
         this.inputFilesEl = document.querySelector('#files');
         this.btnSendFileEl = document.querySelector('#btn-send-file');
@@ -34,6 +36,12 @@ class DropBoxController{
     }
 
     initEvents(){
+
+        this.listFilesEl.addEventListener('selectionchange', e=>{
+
+            console.log('selectionchange');
+
+        });
 
         this.btnSendFileEl.addEventListener('click', event =>{
 
@@ -164,7 +172,7 @@ class DropBoxController{
         return '';
     }
     getFileIconView(file){
-
+        //console.log(file.type);
         switch (file.type) {
             case 'folder':
                 return `
@@ -265,7 +273,7 @@ class DropBoxController{
                 `;
                 break;
 
-            case 'audio/mp3':
+            case 'audio/mpeg':
             case 'audio/ogg':
                 return `
                     <svg width="160" height="160" viewBox="0 0 160 160" class="mc-icon-template-content tile__preview tile__preview--icon">
@@ -345,6 +353,8 @@ class DropBoxController{
             <div class="name text-center">${file.name}</div>
         `;
 
+        this.initEventsLi(li);
+
         return li;
 
     }
@@ -364,4 +374,54 @@ class DropBoxController{
 
         });
     }
+
+    initEventsLi(li){
+
+        li.addEventListener('click', e =>{
+
+            this.listFilesEl.dispatchEvent(this.onselectionchange);
+            if(e.shiftKey){
+
+                let firstLi = this.listFilesEl.querySelector('.selected'); 
+
+                if(firstLi){
+                    let indexStart;
+                    let indexEnd;
+                    let lis = li.parentElement.childNodes;
+
+                    lis.forEach((el, index) => {
+
+                        if(firstLi === el) indexStart = index;
+                        if(li === el) indexEnd = index;
+                    });
+
+                    let index = [indexStart,indexEnd].sort();
+
+                    lis.forEach((el, i) => {
+
+                        if(i >= index[0] && i<= index[1]){
+                            el.classList.add('selected');
+                        }
+
+                    });
+
+                    return true;
+                    
+                }
+
+            }
+
+            if(!e.ctrlKey){
+                this.listFilesEl.querySelectorAll('li.selected').forEach(el => {
+                    el.classList.remove('selected');
+                }); 
+
+            } 
+
+            li.classList.toggle('selected');
+
+        });
+        
+    }
+
 }
