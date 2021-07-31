@@ -34,7 +34,7 @@ Nesta versão da aplicação usei o armazenamento em disco no servido local
 ./upload/
 ```
 ### Esta aplicação utiliza: 
-Javascript, NODEjs, Firebase, HTML5, CSS3, SVG e GIT
+Javascript, NODEjs, NPM, Bower, Firebase, HTML5, CSS3, SVG e GIT
 
 ### Projeto
 ![DropBox Clone](https://firebasestorage.googleapis.com/v0/b/hcode-com-br.appspot.com/o/DropBoxClone.jpg?alt=media&token=d59cad0c-440d-4516-88f2-da904b9bb443)
