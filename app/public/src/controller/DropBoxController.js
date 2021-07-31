@@ -237,8 +237,9 @@ class DropBoxController{
                 this.startUploadTime = Date.now();
             }));
 
-        return Promise.all(promises);
+        });
 
+        return Promise.all(promises);
 
     */
 
@@ -307,13 +308,13 @@ class DropBoxController{
     }
 
     uploadProgress(event, file){
+
         let timespend = Date.now() - this.startUploadTime; 
         let loaded = event.loaded;
         let total = event.total;
         let porcent = ((loaded / total) * 100);
         let timeleft = ((100 - porcent) * timespend) / porcent;
 
-        
         this.progressBarEl.style.width = `${porcent}%`;
 
         this.nameFileEl.innerHTML = file.name;
@@ -322,6 +323,7 @@ class DropBoxController{
     }
 
     formatTimeToHuman(duration){
+
         let seconds = parseInt((duration / 1000) % 60);
         let minutes = parseInt((duration / (1000 * 60)) % 60);
         let hours = parseInt((duration / (1000 * 60 * 60)) % 24);
@@ -338,6 +340,7 @@ class DropBoxController{
 
         return '';
     }
+
     getFileIconView(file){
         //console.log(file.type);
         switch (file.type) {
@@ -561,8 +564,10 @@ class DropBoxController{
     }
 
     renderNav(){
+
         let nav = document.createElement('nav');
         let path = [];
+
         for(let i =0; i < this.currentFolder.length; i++){
 
             let folderName = this.currentFolder[i];
