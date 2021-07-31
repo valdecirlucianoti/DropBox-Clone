@@ -24,15 +24,37 @@ bower install
 ```
 
 ### Configurando a Base de Dados
-Esta aplicação utiliza o `Firebase` para alocar as referencias aos arquivos no servidor
+Esta aplicação utiliza o `Firebase` para alocar as referencias aos arquivos no servidor.
+É necessario o cadastro  no site:
 ```
 www.firebase.google.com
 ```
+Criar um projeto e obter o arquivo `firebaseConfig` e substitua as informações no método `connectFirebase`:
+```
+var firebaseConfig = {
+            apiKey: "*",
+            authDomain: "*",
+            databaseURL: "*",
+            projectId: "*",
+            storageBucket: "*",
+            messagingSenderId: "*",
+            appId: "*",
+            measurementId: "*"
+          };
+          // Initialize Firebase
+          firebase.initializeApp(firebaseConfig);
+          firebase.analytics();
+}
 
-Nesta versão da aplicação usei o armazenamento em disco no servido local
+```
+
+Nesta versão da aplicação usei o armazenamento em disco no servido local para salvar os arquivos de upload
 ```
 ./upload/
 ```
+O armazenamento dos mesmo em um servidor tem seus lados bons e maus mas segui essas linha por motivos de aprendizagem.
+A versão (v2) do projeto tera os arquivos salvos no Firebase assim como suas respectivas referencias.
+
 ### Esta aplicação utiliza: 
 Javascript, NODEjs, NPM, Bower, Firebase, HTML5, CSS3, SVG e GIT
 
