@@ -30,7 +30,7 @@ Esta aplicação utiliza o `Firebase` para alocar as referências aos arquivos n
 www.firebase.google.com
 ```
 
-Criar um projeto e obter o arquivo `firebaseConfig` e substitua as informações no método `connectFirebase`:
+Crie um projeto e obtenha o arquivo `firebaseConfig` e substitua as informações no método `connectFirebase` por seus dados de autenticação:
 ```
 var firebaseConfig = {
             apiKey: "*",
